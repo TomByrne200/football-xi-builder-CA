@@ -8,14 +8,14 @@ import schemas
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(title = "Football XI Builder API")
 
 app.add_middleware(
     CORSMiddleware, 
     allow_origins = ["http://localhost:5173","http://127.0.0.1:5173"],
     allow_credentials = True,
     allow_methods = ["*"],
-    allow_headers = {"*"},
+    allow_headers = ["*"],
 )
 
 def get_db():
@@ -28,61 +28,62 @@ def get_db():
 
 @app.get("/")
 def read_root():
-    return{"message": "CRUD API is working!"}
+    return{"message": "Football XI Builder API is working!"}
 
-@app.post("/tasks", response_model=schemas.Task)
-def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
-    db_task = models.Task(
-        title = task.title,
-        description = task.description,
-        completed = task.completed
+@app.post("/players", response_model=schemas.Player)
+def create_player(player: schemas.PlayerCreate, db: Session = Depends(get_db)):
+    db_player = models.Player(
+        player_name = player.player_name,
+        player_number = player.player_number,
+        position = player.position,
+        on_starting_xi = False
     )
 
-    db.add(db_task)
+    db.add(db_player)
     db.commit()
-    db.refresh(db_task)
+    db.refresh(db_player)
 
-    return db_task
+    return db_player
 
-@app.get("/tasks", response_model=list[schemas.Task])
-def get_tasks(db: Session = Depends(get_db)):
-    tasks = db.query(models.Task).all()
+@app.get("/players", response_model=list[schemas.Player])
+def get_players(db: Session = Depends(get_db)):
+    players = db.query(models.Player).all()
 
-    return tasks
+    return players
 
-@app.get("/tasks/{task_id}",response_model = schemas.Task)
-def get_task(task_id: int, db: Session = Depends(get_db)):
-    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+@app.get("/players/{player_id}",response_model = schemas.Player)
+def get_player(player_id: int, db: Session = Depends(get_db)):
+    player = db.query(models.Player).filter(models.Player.id == player_id).first()
 
-    if task is None:
-        raise HTTPException(status_code=404, detail = "Task not found")
+    if player is None:
+        raise HTTPException(status_code=404, detail = "Player not found")
 
-    return task
+    return player
 
-@app.put("/tasks/{task_id}", response_model = schemas.Task)
-def update_task(task_id: int, updated_task: schemas.TaskCreate, db: Session = Depends(get_db)):
-    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+@app.put("/players/{player_id}", response_model = schemas.Player)
+def update_player(player_id: int, updated_player: schemas.PlayerCreate, db: Session = Depends(get_db)):
+    player = db.query(models.Player).filter(models.Player.id == player_id).first()
 
-    if task is None:
-        raise HTTPException(status_code=404, detail="Task not found")
+    if player is None:
+        raise HTTPException(status_code=404, detail="Player not found")
 
-    task.title = updated_task.title
-    task.description = updated_task.description
-    task.completed = updated_task.completed
+    player.player_name = updated_player.player_name
+    player.player_number = updated_player.player_number
+    player.position = updated_player.position
 
     db.commit()
-    db.refresh(task)
+    db.refresh(player)
 
-    return task
+    return player
 
-@app.delete("/tasks/{task_id}")
-def delete_task(task_id: int, db: Session = Depends(get_db)):
-    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+@app.delete("/players/{player_id}")
+def delete_player(player_id: int, db: Session = Depends(get_db)):
+    player = db.query(models.Player).filter(models.Player.id == player_id).first()
 
-    if task is None:
-        raise HTTPException(status_code = 404, detail = "Task not found")
+    if player is None:
+        raise HTTPException(status_code = 404, detail = "Player not found")
         
-    db.delete(task)
+    db.delete(player)
     db.commit()
 
-    return {"message": "Task deleted sucessfully"}
+    return {"message": "Player deleted sucessfully"}

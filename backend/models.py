@@ -2,10 +2,11 @@ from sqlalchemy import Boolean, Column, Integer, String
 
 from database import Base
 
-class Task(Base):
-    __tablename__ = "tasks"
+class Player(Base):
+    __tablename__ = "players"
 
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True)
-    description = Column(String)
-    completed = Column(Boolean, default=False)
+    player_name = Column(String, nullable= False)
+    player_number = Column(Integer, nullable = False)
+    position = Column(String, nullable = False)
+    on_starting_xi = Column(Boolean, default=False)
